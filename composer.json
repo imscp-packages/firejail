@@ -1,0 +1,33 @@
+{
+  "name": "imscp/firejail",
+  "description": "Firejail (SUID sandbox program) package for i-MSCP InstantSSH plugin",
+  "type": "library",
+  "keywords": [
+    "imscp",
+    "instantssh",
+    "firejail",
+    "sandbox",
+    "security",
+    "chroot"
+  ],
+  "homepage": "https://i-mscp.net/",
+  "license": "GPL-2.0",
+  "support": {
+    "issues": "https://github.com/netblue30/firejail/issues/",
+    "source": "https://github.com/netblue30/firejail/"
+  },
+  "authors": [
+    {
+      "name": "netblue30",
+      "email": "netblue30@yahoo.com",
+      "homepage": "https://firejail.wordpress.com/",
+      "role": "developer"
+    },
+    {
+      "name": "Laurent Declercq",
+      "email": "l.declercq@nuxwin.com",
+      "homepage": "https://i-mscp.net/",
+      "role": "package maintainer"
+    }
+  ]
+}
