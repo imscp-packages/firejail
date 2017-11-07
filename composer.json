@@ -29,11 +29,5 @@
       "homepage": "https://i-mscp.net/",
       "role": "package maintainer"
     }
-  ],
-  "config": {
-    "preferred-install": "dist",
-    "process-timeout": 2000
-  },
-  "minimum-stability": "dev",
-  "prefer-stable": true
+  ]
 }
