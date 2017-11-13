@@ -1,34 +1,39 @@
-# Firejail profile for gnome-ring
-# This file is overwritten after every install/update
-# Persistent local customizations
-include /etc/firejail/gnome-ring.local
+# This file is overwritten after every install/update.
+# Persistent local customisations
+include /etc/firejail/enpass.local
 # Persistent global definitions
 include /etc/firejail/globals.local
-
-noblacklist ${HOME}/.local/share/gnome-ring
 
 include /etc/firejail/disable-common.inc
 include /etc/firejail/disable-devel.inc
 include /etc/firejail/disable-passwdmgr.inc
 include /etc/firejail/disable-programs.inc
 
+noblacklist ${HOME}/.config/Sinew Software Systems
+
 include /etc/firejail/whitelist-var-common.inc
 
 caps.drop all
-ipc-namespace
-netfilter
+machine-id
+net none
+no3d
 nodvd
 nogroups
 nonewprivs
 noroot
+nosound
 notv
-protocol unix,inet,inet6,netlink
+novideo
+protocol unix
 seccomp
 shell none
+tracelog
 
-disable-mnt
-# private-dev
+private-bin sh,readlink,dirname
+private-dev
+private-opt Enpass
 private-tmp
 
+memory-deny-write-execute
 noexec ${HOME}
 noexec /tmp

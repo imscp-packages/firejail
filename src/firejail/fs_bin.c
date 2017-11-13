@@ -99,16 +99,23 @@ static char *check_dir_or_file(const char *name) {
 static int valid_full_path_file(const char *name) {
 	assert(name);
 
-	char *real_path = realpath(name, NULL);
-	if (!real_path)
-		goto errexit;
-	char *fname = strrchr(real_path, '/');
-	if (!fname)
-		goto errexit;
-	if (*(++fname) == '\0')
-		goto errexit;
+	if (*name != '/')
+		return 0;
+	if (strstr(name, ".."))
+		return 0;
 
-	int found = 0;
+	// do we have a file?
+	struct stat s;
+	if (stat(name, &s) == -1)
+		return 0;
+	// directories not allowed
+	if (S_ISDIR(s.st_mode))
+		return 0;
+	// checking access
+	if (access(name, X_OK) == -1)
+		return 0;
+
+	// check standard paths
 	int i = 0;
 	while (paths[i]) {
 		// private-bin-no-local can be disabled in /etc/firejail/firejail.config
@@ -117,34 +124,13 @@ static int valid_full_path_file(const char *name) {
 			continue;
 		}
 
-		// check file
-		char *path;
-		if (asprintf(&path, "%s/%s", paths[i], fname) == -1)
-			errExit("asprintf");
-
-		if (strcmp(real_path, path) == 0) {
-			free(path);
-			// checking access
-			if (access(real_path, X_OK) == 0)
-				found = 1;
-			break;
-		}
-
-		free(path);
+		int len = strlen(paths[i]);
+		if (strncmp(name, paths[i], len) == 0 && name[len] == '/' && name[len + 1] != '\0')
+			return 1;
 		i++;
 	}
-
-	if (!found)
-		goto errexit;
-
-	free(real_path);
-	return 1;
-
-errexit:
 	if (arg_debug)
-		fwarning("file %s not found\n", name);
-	if (real_path)
-		free(real_path);
+		printf("file %s not found\n", name);
 	return 0;
 }
 
@@ -196,27 +182,24 @@ static void duplicate(char *fname, FILE *fplist) {
 	if (fplist)
 		fprintf(fplist, "%s\n", full_path);
 
-	// copy the file
-	if (checkcfg(CFG_FOLLOW_SYMLINK_PRIVATE_BIN))
-		sbox_run(SBOX_ROOT| SBOX_SECCOMP, 4, PATH_FCOPY, "--follow-link", full_path, RUN_BIN_DIR);
-	else {
-		// if full_path is simlink, and the link is in our path, copy both
-		if (is_link(full_path)) {
-			char *actual_path = realpath(full_path, NULL);
-			if (actual_path) {
-				if (valid_full_path_file(actual_path)) {
-					// copy the real file pointed by symlink
-					sbox_run(SBOX_ROOT| SBOX_SECCOMP, 3, PATH_FCOPY, actual_path, RUN_BIN_DIR);
-					char *f = strrchr(actual_path, '/');
-					if (f && *(++f) !='\0')
-						report_duplication(f);
-				}
-				free(actual_path);
+	// if full_path is symlink, and the link is in our path, copy both the file and the symlink
+	if (is_link(full_path)) {
+		char *actual_path = realpath(full_path, NULL);
+		if (actual_path) {
+			if (valid_full_path_file(actual_path)) {
+				// solving problems such as /bin/sh -> /bin/dash
+				// copy the real file pointed by symlink
+				sbox_run(SBOX_ROOT| SBOX_SECCOMP, 3, PATH_FCOPY, actual_path, RUN_BIN_DIR);
+				char *f = strrchr(actual_path, '/');
+				if (f && *(++f) !='\0')
+					report_duplication(f);
 			}
+			free(actual_path);
 		}
-		// copy a file or a symlink
-		sbox_run(SBOX_ROOT| SBOX_SECCOMP, 3, PATH_FCOPY, full_path, RUN_BIN_DIR);
 	}
+
+	// copy a file or a symlink
+	sbox_run(SBOX_ROOT| SBOX_SECCOMP, 3, PATH_FCOPY, full_path, RUN_BIN_DIR);
 	free(full_path);
 	report_duplication(fname);
 }

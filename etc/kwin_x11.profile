@@ -1,24 +1,20 @@
-# Firejail profile for qtox
+# Firejail profile for kwin_x11
 # This file is overwritten after every install/update
 # Persistent local customizations
-include /etc/firejail/qtox.local
+include /etc/firejail/kwin_x11.local
 # Persistent global definitions
 include /etc/firejail/globals.local
 
-noblacklist ~/.config/qt5ct
-noblacklist ~/.config/tox
+noblacklist ~/.config/kwinrc
+noblacklist ~/.config/kwinrulesrc
+noblacklist ~/.local/share/kwin
 
 include /etc/firejail/disable-common.inc
 include /etc/firejail/disable-devel.inc
 include /etc/firejail/disable-passwdmgr.inc
 include /etc/firejail/disable-programs.inc
 
-mkdir ${HOME}/.config/qt5ct
-mkdir ${HOME}/.config/tox
-whitelist ${DOWNLOADS}
-whitelist ${HOME}/.config/qt5ct
-whitelist ${HOME}/.config/tox
-include /etc/firejail/whitelist-common.inc
+include /etc/firejail/whitelist-var-common.inc
 
 caps.drop all
 netfilter
@@ -26,16 +22,19 @@ nodvd
 nogroups
 nonewprivs
 noroot
+nosound
 notv
-protocol unix,inet,inet6
+novideo
+protocol unix
 seccomp
 shell none
 tracelog
 
 disable-mnt
-private-bin qtox
+private-bin kwin_x11
 private-dev
+private-etc drirc,ld.so.cache,machine-id,xdg
 private-tmp
 
-noexec ${HOME}
+# noexec ${HOME}
 noexec /tmp
